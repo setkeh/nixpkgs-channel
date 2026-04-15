@@ -1,105 +1,53 @@
-{ stdenv, lib, fetchurl, dpkg
-, alsa-lib, atk, cairo, cups, curl, dbus, expat, fontconfig, freetype, glib, glibc
-, qtbase, qttools, wrapQtAppsHook, libnotify, libpulseaudio, libsecret, libv4l, nspr, nss, pango, systemd, wrapGAppsHook, xorg
-, at-spi2-atk, libGLU }:
+{
+  lib,
+  stdenv,
+  libGLU,
+  fetchurl,
+  dpkg,
+  autoPatchelfHook,
+  libsForQt5,
+}:
 
-let
+stdenv.mkDerivation (finalAttrs: {
+  pname = "flashprint";
+  version = "5.8.7";
 
-  rpath = lib.makeLibraryPath [
-    alsa-lib
-    atk
-    at-spi2-atk
-    cairo
-    cups
-    curl
-    dbus
-    expat
-    fontconfig
-    freetype
-    glib
-    glibc
-    libsecret
-
-    qtbase
-    qttools
-
-    libnotify
-    libpulseaudio
-    nspr
-    nss
-    pango
-    stdenv.cc.cc
-    systemd
-    libv4l
-
-    libGLU
-
-    xorg.libxkbfile
-    xorg.libX11
-    xorg.libXcomposite
-    xorg.libXcursor
-    xorg.libXdamage
-    xorg.libXext
-    xorg.libXfixes
-    xorg.libXi
-    xorg.libXrandr
-    xorg.libXrender
-    xorg.libXtst
-    xorg.libXScrnSaver
-    xorg.libxcb
-  ] + ":${stdenv.cc.cc.lib}/lib64";
-
-  mirror = "https://en.fss.flashforge.com/10000/software";
-
-in stdenv.mkDerivation rec {
-
-  name = "FlashPrint5";
-  fname = "073e21bbe6ba5c7defb17dbb69708fd8";
-  #version = "5.2.0"; #Not currently used in code but good refrence
-
-  src =
-  if stdenv.hostPlatform.system == "x86_64-linux" then
-    fetchurl {
-      url = "${mirror}/${fname}.deb";
-      sha256 = "0s9js5q1shfn5x4m0c1v16pvanr8c86w92lb0p39asyi7vbqlbdf";
-    }
-  else
-    throw "FlashPrint for linux is not supported on ${stdenv.hostPlatform.system}";
+  src = fetchurl {
+    url = "http://www.ishare3d.com/3dapp/public/FlashPrint-5/FlashPrint/flashprint5_${finalAttrs.version}_amd64.deb";
+    hash = "sha256-DVY5XxAz3HPAWMNaGauUop7OWHeFuuRHuVllyJvHqFk=";
+  };
 
   nativeBuildInputs = [
-    wrapQtAppsHook
-    wrapGAppsHook
-    glib # For setup hook populating GSETTINGS_SCHEMA_PATH
+    dpkg
+    autoPatchelfHook
+    libsForQt5.wrapQtAppsHook
+  ];
+
+  buildInputs = [
+    libsForQt5.qtbase
     libGLU
   ];
 
-  buildInputs = [ dpkg libGLU ];
+  qtWrapperArgs = [ "--prefix QT_QPA_PLATFORM : xcb" ];
 
-  unpackPhase = "true";
   installPhase = ''
-    mkdir -p $out
+    runHook preInstall
+
     mkdir -p $out/bin
-    dpkg -x $src $out
-    ln -s "$out/usr/share/${name}/FlashPrint" "$out/bin/FlashPrint"
-    # Otherwise it looks "suspicious"
-    chmod -R g-w $out
+    mv etc usr/* $out
+    ln -s $out/share/FlashPrint5/FlashPrint $out/bin/flashprint
+    sed -i "/^Exec=/ c Exec=$out/bin/flashprint" $out/share/applications/FlashPrint5.desktop
+
+    runHook postInstall
   '';
 
-  postFixup = ''
-    for file in $(find $out -type f \( -perm /0111 -o -name \*.so\* -or -name \*.node\* \) ); do
-      patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" "$file" || true
-      patchelf --set-rpath ${rpath}:$out/share/${name} $file || true
-    done
-    # Fix the desktop link
-    substituteInPlace $out/usr/share/applications/${name}.desktop \
-      --replace /usr/bin/ $out/bin/
-  '';
-
-
-  meta = with lib; {
-    homepage = "https://www.flashforge.com";
-    description = "Flashprint 3D Print Slicer";
+  meta = {
+    description = "Slicer for the FlashForge 3D printers";
+    homepage = "https://www.flashforge.com/";
+    license = lib.licenses.unfree;
+    mainProgram = "flashprint";
+    maintainers = [ lib.maintainers.ianliu ];
     platforms = [ "x86_64-linux" ];
-    license = licenses.unfree;
+    sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
   };
-}
+})
