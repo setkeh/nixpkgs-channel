@@ -1,12 +1,12 @@
 { stdenv, lib, fetchurl, dpkg
-, alsaLib, atk, cairo, cups, curl, dbus, expat, fontconfig, freetype, glib, glibc
+, alsa-lib, atk, cairo, cups, curl, dbus, expat, fontconfig, freetype, glib, glibc
 , qtbase, qttools, wrapQtAppsHook, libnotify, libpulseaudio, libsecret, libv4l, nspr, nss, pango, systemd, wrapGAppsHook, xorg
 , at-spi2-atk, libGLU }:
 
 let
 
   rpath = lib.makeLibraryPath [
-    alsaLib
+    alsa-lib
     atk
     at-spi2-atk
     cairo
