@@ -1,10 +1,25 @@
-{ inputs, ... }:
+{ inputs, lib, ... }:
 {
-  imports = [
-    inputs.pkgs-by-name-for-flake-parts.flakeModule
-  ];
 
-  perSystem = {
-    pkgsDirectory = ../pkgs/by-name;
-  };
+  perSystem =
+    {
+      config,
+      self',
+      inputs',
+      pkgs,
+      system,
+      ...
+    }:
+    {
+      packages =
+        let
+          scope = lib.makeScope pkgs.newScope (self: {
+            inherit inputs;
+          });
+        in
+        lib.filesystem.packagesFromDirectoryRecursive {
+          inherit (scope) callPackage;
+          directory = ../pkgs/by-name;
+        };
+    };
 }
