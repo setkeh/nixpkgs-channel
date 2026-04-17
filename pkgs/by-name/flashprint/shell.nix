@@ -1,8 +1,7 @@
-let
-  pkgs = import <nixpkgs> {};
-in
+{ pkgs }:
+
 pkgs.stdenv.mkDerivation {
   name = "flashprint-shell";
-  buildInputs = [ (pkgs.libsForQt5.callPackage ./default.nix {}) ];
+  buildInputs = [ (pkgs.libsForQt5.callPackage ./package.nix {}) ];
   shellHook = "FlashPrint";
 }

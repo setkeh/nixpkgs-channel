@@ -1,8 +1,7 @@
-let
-  pkgs = import <nixpkgs> {};
-in
+{ pkgs }:
+
 pkgs.stdenv.mkDerivation {
   name = "mqtt-explorer-shell";
-  buildInputs = [ (pkgs.callPackage ./mqtt-explorer.nix {}) ];
+  buildInputs = [ (pkgs.callPackage ./package.nix {}) ];
   shellHook = "mqtt-explorer";
 }

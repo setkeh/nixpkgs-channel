@@ -1,8 +1,7 @@
-let
-  pkgs = import <nixpkgs> {};
-in
+{ pkgs }:
+
 pkgs.stdenv.mkDerivation {
   name = "MapTool-shell";
-  buildInputs = [ (pkgs.callPackage ./MapTool.nix {}) ];
+  buildInputs = [ (pkgs.callPackage ./package.nix {}) ];
   shellHook = "maptool";
 }

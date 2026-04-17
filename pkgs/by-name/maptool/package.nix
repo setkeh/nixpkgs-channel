@@ -1,10 +1,6 @@
-let
-  nixpkgs = import <nixpkgs> {};
-in
+{ stdenv, fetchurl, makeWrapper, jdk }:
 
-{ stdenv ? nixpkgs.stdenv, fetchurl ? nixpkgs.fetchurl, makeWrapper ? nixpkgs.makeWrapper, jdk ? nixpkgs.jdk}:
-
-nixpkgs.stdenv.mkDerivation rec {
+stdenv.mkDerivation rec {
   name = "MapTool";
 
   #version = "1.10.4";
