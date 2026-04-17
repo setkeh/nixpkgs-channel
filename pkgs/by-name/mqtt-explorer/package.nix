@@ -5,6 +5,7 @@ stdenv.mkDerivation rec {
   version = "0.4.0-beta1";
   src = appimageTools.extract {
     name = pname;
+    version = "0.4.0-beta1";
     src = fetchurl {
       url = "https://github.com/thomasnordquist/${pname}/releases/download/0.0.0-${version}/${pname}-${version}.AppImage";
       sha256 = "0x9ava13hn1nkk2kllh5ldi4b3hgmgwahk08sq48yljilgda4ppn";
