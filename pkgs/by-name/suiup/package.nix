@@ -13,7 +13,7 @@ let
   src = fetchurl {
     url = "https://github.com/MystenLabs/suiup/releases/download/v${version}/suiup-Linux-musl-x86_64.tar.gz";
     # Leave empty initially. Run `nix run nixpkgs#nix-prefetch-url -- <URL>` to generate the proper SRI hash.
-    hash = "0z7y6a0jgf7g0rk79zf0yhzdr02jndw7k4a8lkrw4h4bq16h5cgp"; 
+    hash = "sha256-97ECTcCLQMLzpEiReXizUoDcPvTA/XRmBu+4J4Ey/nw="; 
   };
 in
 stdenv.mkDerivation {
