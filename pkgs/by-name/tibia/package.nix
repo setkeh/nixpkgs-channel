@@ -44,7 +44,7 @@ stdenv.mkDerivation rec {
     description = "Top-down MMORPG set in a fantasy world";
     homepage = "http://tibia.com";
     license = lib.licenses.unfree;
-    platforms = ["i686-linux"];
+    platforms = ["x86_64-linux"];
     maintainers = with lib.maintainers; [ ];
   };
 }
