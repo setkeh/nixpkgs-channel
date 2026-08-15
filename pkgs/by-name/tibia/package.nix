@@ -2,10 +2,9 @@
 
 stdenv.mkDerivation rec {
   pname = "tibia";
-  version = "10.90";
 
   src = fetchurl {
-    url = "http://static.tibia.com/download/tibia${lib.replaceStrings ["."] [""] version}.tgz";
+    url = "https://static.tibia.com/download/tibia.x64.tar.gz";
     sha256 = "11mkh2dynmbpay51yfaxm5dmcys3rnpk579s9ypfkhblsrchbkhx";
   };
 
