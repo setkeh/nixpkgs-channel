@@ -1,56 +1,143 @@
-{ lib, stdenv, fetchurl, glibc, libX11, runtimeShell, libGLU, libGL }:
+{ lib
+, stdenv
+, fetchurl
+, autoPatchelfHook
+, makeWrapper
+, writeShellScript
+, html2text
+, qt6
+, libGL
+, libGLU
+, xorg
+, pcre
+, pcre2
+, zlib
+, libxkbcommon
+, fontconfig
+, freetype
+, dbus
+, vulkan-loader
+}:
 
-stdenv.mkDerivation rec {
-  name = "tibia";
+let
   tibiaUrl = "https://static.tibia.com/download/tibia.x64.tar.gz";
+
+  # static.tibia.com sits behind a WAF that rejects bare curl. 
+  # We work around this with,
+  # Accept-Encoding + a self-referer.
+  curlOpts = [
+    "--compressed"
+    "--referer"
+    tibiaUrl
+    "--user-agent"
+    "curl/8.9.1"
+  ];
+
+  # The Tibia client self-updates by writing into its own install directory.
+  # The /nix/store is read-only, so seed a writable copy under
+  # $XDG_DATA_HOME on first run and re-seed whenever the store path changes.
+  #
+  # Tibia binary is a bit dumb and looks for './Tibia.dat', so it must be
+  # started with cwd set to its own directory.
+  launcher = writeShellScript "tibia-launcher" ''
+    set -eu
+    prefix="''${XDG_DATA_HOME:-$HOME/.local/share}/tibia"
+    stamp="$prefix/.nix-revision"
+    if [ ! -e "$stamp" ] || [ "$(cat "$stamp")" != "$TIBIA_PKG" ]; then
+      mkdir -p "$prefix"
+      cp -rL --no-preserve=mode,ownership "$TIBIA_PKG"/. "$prefix"/
+      chmod -R u+w "$prefix"
+      printf '%s' "$TIBIA_PKG" > "$stamp"
+    fi
+    cd "$prefix"
+    exec ./Tibia "$@"
+  '';
+in
+stdenv.mkDerivation (finalAttrs: {
+  pname = "tibia";
+  version = "14.0.0";
 
   src = fetchurl {
     url = tibiaUrl;
-    sha256 = "sha256-BKh8gB04VfTaGwfiAd/x95rMhSjFfJhBMcOiqIy2Dqc=";
-    curlOptsList = [
-      "--compressed"
-      "--referer" tibiaUrl
-      "--user-agent" "curl/8.9.1"
-  ] ;
+    hash = "sha256-BKh8gB04VfTaGwfiAd/x95rMhSjFfJhBMcOiqIy2Dqc=";
+    curlOptsList = curlOpts;
   };
 
-  shell = stdenv.shell;
+  # Package LICENSE by running the agreement page through html2text.
+  agreement = fetchurl {
+    url = "https://www.tibia.com/support/agreement.php";
+    hash = lib.fakeHash; # fill in on first build
+    curlOptsList = curlOpts;
+  };
 
-  # These binaries come stripped already and trying to strip after the
-  # files are in $out/res and after patchelf just breaks them.
-  # Strangely it works if the files are in $out but then nix doesn't
-  # put them in our PATH. We set all the files to $out/res because
-  # we'll be using a wrapper to start the program which will go into
-  # $out/bin.
+  # The tarball has a single top-level 'Tibia/' directory, which stdenv would
+  # cd into automatically -- stated explicitly so a repack with extra
+  # top-level entries fails loudly instead of silently changing layout.
+  sourceRoot = "Tibia";
+
+  # These binaries come stripped already and stripping again after patchelf
+  # just breaks them.
   dontStrip = true;
+  dontBuild = true;
+  dontConfigure = true;
+
+  nativeBuildInputs = [
+    autoPatchelfHook
+    makeWrapper
+    html2text
+    qt6.wrapQtAppsHook
+  ];
+
+  # autoPatchelfHook reads DT_NEEDED off the binaries and resolves against
+  # these, so there is no hand-maintained --set-rpath list to fall out of date
+  # (and no chance of naming the wrong dynamic linker -- it takes the
+  # interpreter from stdenv, which is correct per-platform).
+  buildInputs = [
+    stdenv.cc.cc.lib
+    zlib
+    libGL
+    libGLU
+    xorg.libX11
+    xorg.libXext
+    xorg.libICE
+    xorg.libSM
+    pcre
+    pcre2
+    qt6.qtbase
+    qt6.qtwayland
+    libxkbcommon
+    fontconfig
+    freetype
+    dbus
+  ];
+
+  # dlopen'd at runtime rather than listed in DT_NEEDED, so autoPatchelfHook
+  # cannot discover it on its own.
+  # optdepends=('vulkan-driver: for Vulkan rendering').
+  runtimeDependencies = [ vulkan-loader ];
 
   installPhase = ''
-    mkdir -pv $out/res
-    cp -r * $out/res
-    patchelf --set-interpreter ${glibc.out}/lib/ld-linux.so.2 \
-             --set-rpath ${lib.makeLibraryPath [ stdenv.cc.cc libX11 libGLU libGL ]} \
-             "$out/res/Tibia"
-    # We've patchelf'd the files. The main ‘Tibia’ binary is a bit
-    # dumb so it looks for ‘./Tibia.dat’. This requires us to be in
-    # the same directory as the file itself but that's very tedious,
-    # especially with nix which changes store hashes. Here we generate
-    # a simple wrapper that we put in $out/bin which will do the
-    # directory changing for us.
-    mkdir -pv $out/bin
-    # The wrapper script itself. We use $LD_LIBRARY_PATH for libGL.
-    cat << EOF > "$out/bin/Tibia"
-    #!${runtimeShell}
-    cd $out/res
-    ${glibc.out}/lib/ld-linux.so.2 --library-path \$LD_LIBRARY_PATH ./Tibia "\$@"
-    EOF
-    chmod +x $out/bin/Tibia
+    runHook preInstall
+
+    mkdir -p $out/share/tibia
+    cp -r . $out/share/tibia/
+
+    html2text ${finalAttrs.agreement} > LICENSE
+    install -Dm644 LICENSE $out/share/licenses/tibia/LICENSE
+
+    makeWrapper ${launcher} $out/bin/tibia \
+      --set TIBIA_PKG $out/share/tibia
+
+    runHook postInstall
   '';
 
   meta = {
     description = "Top-down MMORPG set in a fantasy world";
-    homepage = "http://tibia.com";
+    homepage = "https://www.tibia.com/";
     license = lib.licenses.unfree;
-    platforms = ["x86_64-linux"];
+    platforms = [ "x86_64-linux" ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
+    mainProgram = "tibia";
     maintainers = with lib.maintainers; [ ];
   };
-}
+})
