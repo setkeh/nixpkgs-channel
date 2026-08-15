@@ -6,7 +6,7 @@ stdenv.mkDerivation rec {
 
   src = fetchurl {
     url = tibiaUrl;
-    sha256 = "sha256-tKXLMQdbwsIo6gui8cZuUwA7JxCUtd5Piz2aDLIoLOQ=";
+    sha256 = "sha256-BKh8gB04VfTaGwfiAd/x95rMhSjFfJhBMcOiqIy2Dqc=";
     curlOptsList = [
       "--compressed"
       "--referer" tibiaUrl
