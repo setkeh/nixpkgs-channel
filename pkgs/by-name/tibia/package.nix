@@ -1,7 +1,7 @@
 { lib, stdenv, fetchurl, glibc, libX11, runtimeShell, libGLU, libGL }:
 
 stdenv.mkDerivation rec {
-  pname = "tibia";
+  name = "tibia";
 
   src = fetchurl {
     url = "https://static.tibia.com/download/tibia.x64.tar.gz";
