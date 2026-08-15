@@ -6,6 +6,9 @@ stdenv.mkDerivation rec {
   src = fetchurl {
     url = "https://static.tibia.com/download/tibia.x64.tar.gz";
     sha256 = "11mkh2dynmbpay51yfaxm5dmcys3rnpk579s9ypfkhblsrchbkhx";
+    curlOptsList = [
+      "--user-agent" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+    ];
   };
 
   shell = stdenv.shell;
