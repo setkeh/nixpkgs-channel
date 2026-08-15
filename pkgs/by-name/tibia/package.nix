@@ -46,7 +46,7 @@ let
     if [ ! -e "$stamp" ] || [ "$(cat "$stamp")" != "$TIBIA_PKG" ]; then
       mkdir -p "$prefix"
       cp -rL --no-preserve=mode,ownership "$TIBIA_PKG"/. "$prefix"/
-      chmod -R u+w "$prefix"
+      chmod -R u+rwX "$prefix"
       printf '%s' "$TIBIA_PKG" > "$stamp"
     fi
     cd "$prefix"
