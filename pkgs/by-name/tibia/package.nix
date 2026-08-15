@@ -66,7 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
   # Package LICENSE by running the agreement page through html2text.
   agreement = fetchurl {
     url = "https://www.tibia.com/support/agreement.php";
-    hash = lib.fakeHash; # fill in on first build
+    hash = "sha256-8rkVXJeredGwqbG2b8RVZ06eZTF3i5pATqcisAxIBK4=";
     curlOptsList = curlOpts;
   };
 
