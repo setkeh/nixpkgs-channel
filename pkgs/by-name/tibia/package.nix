@@ -2,13 +2,16 @@
 
 stdenv.mkDerivation rec {
   name = "tibia";
+  tibiaUrl = "https://static.tibia.com/download/tibia.x64.tar.gz";
 
   src = fetchurl {
-    url = "https://static.tibia.com/download/tibia.x64.tar.gz";
-    sha256 = "11mkh2dynmbpay51yfaxm5dmcys3rnpk579s9ypfkhblsrchbkhx";
+    url = tibiaUrl;
+    sha256 = "sha256-tKXLMQdbwsIo6gui8cZuUwA7JxCUtd5Piz2aDLIoLOQ=";
     curlOptsList = [
-      "--user-agent" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-    ];
+      "--compressed"
+      "--referer" tibiaUrl
+      "--user-agent" "curl/8.9.1"
+  ] ;
   };
 
   shell = stdenv.shell;
