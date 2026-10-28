@@ -78,7 +78,7 @@ let
 
   src = fetchurl {
     url = tibiaUrl;
-    hash = "sha256-BKh8gB04VfTaGwfiAd/x95rMhSjFfJhBMcOiqIy2Dqc=";
+    hash = "sha256-AqEbXYCYNRIoVtHuXoSTg0DVk3SJzL5KQG3qQ7LO9Tg";
     curlOptsList = curlOpts;
   };
 
