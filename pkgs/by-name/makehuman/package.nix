@@ -130,6 +130,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postBuild
   '';
 
+  # MakeHuman draws with legacy fixed-function GL inside a Qt5 QOpenGLWidget,
+  # and PyOpenGL picks its GL backend (EGL vs GLX) from XDG_SESSION_TYPE /
+  # WAYLAND_DISPLAY independently of whichever platform Qt picked. When they
+  # disagree, glVertexPointer finds no current context and every frame fails
+  # with "gl.draw". Force both to X11 (XWayland on a Wayland session): this
+  # has to be --set, not --set-default, because Wayland sessions commonly
+  # export QT_QPA_PLATFORM=wayland for every app.
+  qtWrapperArgs = [
+    "--set QT_QPA_PLATFORM xcb"
+    "--set PYOPENGL_PLATFORM glx"
+  ];
+
   preFixup = ''
     wrapQtApp $out/bin/makehuman
   '';
