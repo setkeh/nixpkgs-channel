@@ -1,0 +1,31 @@
+From 4dbb64b82cd618cfb45cbb2d06c6f25627e922fe Mon Sep 17 00:00:00 2001
+From: Aranuvir <Aranuvir@github>
+Date: Wed, 26 Jun 2024 08:50:30 +0200
+Subject: [PATCH] fix for ogre exporter error using deprecated imp module
+
+---
+ makehuman/plugins/9_export_ogre/__init__.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/makehuman/plugins/9_export_ogre/__init__.py b/makehuman/plugins/9_export_ogre/__init__.py
+index 4cb47cca..111e843f 100644
+--- a/makehuman/plugins/9_export_ogre/__init__.py
++++ b/makehuman/plugins/9_export_ogre/__init__.py
+@@ -38,7 +38,7 @@ Exporter plugin for the Ogre3d mesh format.
+ 
+ from . import mh2ogre
+ from export import Exporter, ExportConfig
+-import imp
++import importlib
+ 
+ class OgreConfig(ExportConfig):
+ 
+@@ -60,7 +60,7 @@ class ExporterOgre(Exporter):
+         self.orderPriority = 60.0
+ 
+     def export(self, human, filename):
+-        imp.reload(mh2ogre) # TODO ?
++        importlib.reload(mh2ogre) # TODO ?
+         cfg = self.getConfig()
+         cfg.setHuman(human)
+         mh2ogre.exportOgreMesh(filename("mesh.xml"), cfg)
