@@ -1,0 +1,15 @@
+diff --git a/makehuman/lib/shader.py b/makehuman/lib/shader.py
+index 990fa76f..280d0a27 100644
+--- a/makehuman/lib/shader.py
++++ b/makehuman/lib/shader.py
+@@ -458,6 +458,10 @@ class Shader(object):
+             self.uniforms = []
+             for index in range(parameterCount):
+                 name, size, type = glGetActiveUniform(self.shaderId, index)
++                # PyOpenGL only converts the name via ndarray.tostring(), which NumPy 2.3
++                # removed, so it can come back as the raw NUL-padded array
++                if hasattr(name, "tobytes"):
++                    name = name.tobytes().split(b"\0", 1)[0]
+                 if not name:
+                     continue
+                 location = glGetUniformLocation(self.shaderId, name)
