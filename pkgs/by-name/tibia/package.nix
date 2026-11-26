@@ -11,7 +11,10 @@
 , qt6
 , libGL
 , libGLU
-, xorg
+, libx11
+, libxext
+, libice
+, libsm
 , pcre
 , pcre2
 , zlib
@@ -117,10 +120,10 @@ let
     zlib
     libGL
     libGLU
-    xorg.libX11
-    xorg.libXext
-    xorg.libICE
-    xorg.libSM
+    libx11
+    libxext
+    libice
+    libsm
     pcre
     pcre2
     qt6.qtbase
@@ -206,25 +209,25 @@ let
 
     # X11 / xcb -- the downloaded client brings its own Qt, which needs the
     # whole xcb platform stack present under /usr/lib.
-    xorg.libX11
-    xorg.libXext
-    xorg.libXrender
-    xorg.libXi
-    xorg.libXcursor
-    xorg.libXrandr
-    xorg.libXfixes
-    xorg.libXcomposite
-    xorg.libXdamage
-    xorg.libXtst
-    xorg.libxcb
-    xorg.libICE
-    xorg.libSM
-    xorg.xcbutil
-    xorg.xcbutilwm
-    xorg.xcbutilimage
-    xorg.xcbutilkeysyms
-    xorg.xcbutilrenderutil
-    xorg.xcbutilcursor
+    libx11
+    libxext
+    libxrender
+    libxi
+    libxcursor
+    libxrandr
+    libxfixes
+    libxcomposite
+    libxdamage
+    libxtst
+    libxcb
+    libice
+    libsm
+    libxcb-util
+    libxcb-wm
+    libxcb-image
+    libxcb-keysyms
+    libxcb-render-util
+    libxcb-cursor
     libxkbcommon
 
     # Wayland (the client will use xcb via XWayland if these are absent)
